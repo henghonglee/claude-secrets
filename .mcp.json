@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "secrets": {
+      "command": "bash",
+      "args": ["-l", "-c", "mcp-secrets serve"],
+      "env": {}
+    }
+  }
+}
