@@ -2,6 +2,7 @@
 
 import os
 import subprocess
+import webbrowser
 from datetime import datetime
 from pathlib import Path
 
@@ -9,6 +10,7 @@ import rumps
 
 from .vault import Vault
 from .config import CONFIG_DIR, LOG_FILE, consume_events
+from .webui import WebUIServer
 
 def create_icon() -> bytes:
     """Create a simple AI-themed menubar icon (18x18 PNG template)."""
@@ -117,19 +119,6 @@ def show_dialog(title: str, message: str, ok_button: str = "OK", cancel_button: 
     return ok_button in result.stdout
 
 
-def show_input_dialog(title: str, message: str, default_text: str = "", hidden: bool = False) -> str | None:
-    """Show a native macOS input dialog. Returns text or None if cancelled."""
-    hidden_arg = "with hidden answer" if hidden else ""
-    script = f'''
-    display dialog "{message}" with title "{title}" default answer "{default_text}" {hidden_arg} buttons {{"Cancel", "OK"}} default button "OK" with icon note
-    text returned of result
-    '''
-    result = subprocess.run(["osascript", "-e", script], capture_output=True, text=True)
-    if result.returncode == 0:
-        return result.stdout.strip()
-    return None
-
-
 def show_secret_request_dialog(name: str, description: str) -> str | None:
     """Show a dialog for requesting a secret value."""
     # Escape special characters for AppleScript
@@ -160,6 +149,11 @@ class MCPSecretsMenuBar(rumps.App):
         self.vault = Vault()
         self.server_process = None
         self._pending_secrets = []  # Secrets that need to be added
+
+        # Start web UI server
+        self._webui = WebUIServer(self.vault)
+        self._webui_url = self._webui.start()
+
         self._build_menu()
 
     def _update_icon(self):
@@ -204,48 +198,8 @@ class MCPSecretsMenuBar(rumps.App):
         # Add Secret
         self.menu.add(rumps.MenuItem("Add Secret...", callback=self.add_secret))
 
-        # List Secrets submenu
-        secrets_menu = rumps.MenuItem("Secrets")
-        try:
-            self.vault.load()
-            secrets = self.vault.list_all()
-            if secrets:
-                for secret in secrets:
-                    desc = secret.description or "(no description)"
-                    # Truncate description
-                    if len(desc) > 40:
-                        desc = desc[:37] + "..."
-
-                    # Show expiry if set
-                    if secret.expires_at:
-                        try:
-                            exp = datetime.fromisoformat(secret.expires_at.replace("Z", "+00:00"))
-                            now = datetime.now(exp.tzinfo)
-                            if exp < now:
-                                desc += " [EXPIRED]"
-                            else:
-                                delta = exp - now
-                                hours = delta.total_seconds() / 3600
-                                if hours < 1:
-                                    desc += f" [{int(delta.total_seconds()/60)}m left]"
-                                elif hours < 24:
-                                    desc += f" [{int(hours)}h left]"
-                        except (ValueError, TypeError):
-                            pass
-
-                    item = rumps.MenuItem(f"{secret.name}: {desc}")
-                    item.set_callback(None)
-                    secrets_menu.add(item)
-            else:
-                no_secrets = rumps.MenuItem("(empty)")
-                no_secrets.set_callback(None)
-                secrets_menu.add(no_secrets)
-        except Exception:
-            error_item = rumps.MenuItem("(vault not initialized)")
-            error_item.set_callback(None)
-            secrets_menu.add(error_item)
-
-        self.menu.add(secrets_menu)
+        # View Secrets
+        self.menu.add(rumps.MenuItem("View Secrets...", callback=self.view_secrets))
 
         self.menu.add(rumps.separator)
 
@@ -355,12 +309,18 @@ class MCPSecretsMenuBar(rumps.App):
         self._pending_secrets = []
         self._build_menu()
 
-        for secret_name in secrets_to_add:
-            self._add_secret_dialog(secret_name)
+        # Open browser for the first pending secret (user can add others from the list)
+        if secrets_to_add:
+            first_secret = secrets_to_add[0]
+            webbrowser.open(f"{self._webui_url}/add?name={first_secret}")
 
     def add_secret(self, _):
-        """Open dialog to add a new secret."""
-        self._add_secret_dialog()
+        """Open browser to add a new secret."""
+        webbrowser.open(f"{self._webui_url}/add")
+
+    def view_secrets(self, _):
+        """Open browser to view all secrets."""
+        webbrowser.open(f"{self._webui_url}/list")
 
     def _add_secret_value_only(self, name: str, description: str):
         """Add a secret - only prompt for value (name and description from LLM)."""
@@ -383,55 +343,6 @@ class MCPSecretsMenuBar(rumps.App):
         except Exception as e:
             show_dialog("Error", f"Failed to add secret: {e}", "OK", "OK")
 
-    def _add_secret_dialog(self, prefill_name: str = ""):
-        """Show dialog to add a new secret manually."""
-        # Get secret name
-        name = show_input_dialog(
-            "Add Secret",
-            "Enter the secret name (e.g., AWS_API_KEY):",
-            prefill_name
-        )
-        if not name:
-            return
-
-        name = name.strip().upper().replace(" ", "_")
-
-        # Get secret value (hidden input)
-        value = show_input_dialog(
-            "Add Secret",
-            f"Enter the secret value for {name}:",
-            "",
-            hidden=True
-        )
-        if not value:
-            return
-
-        value = value.strip()
-
-        # Get description
-        description = show_input_dialog(
-            "Add Secret",
-            "Description (help AI assistants understand what this secret is for):",
-            ""
-        )
-        if description is None:
-            return
-
-        description = description.strip()
-
-        # Save to vault
-        try:
-            self.vault.load()
-            self.vault.add(name, value, description)
-            notify(
-                title="MCP Secrets",
-                subtitle="Secret Added",
-                message=f"Added: {name}",
-            )
-            self._build_menu()
-        except Exception as e:
-            show_dialog("Error", f"Failed to add secret: {e}", "OK", "OK")
-
     def view_logs(self, _):
         """Open the log file in Console.app."""
         if LOG_FILE.exists():
@@ -444,6 +355,9 @@ class MCPSecretsMenuBar(rumps.App):
 
     def quit_app(self, _):
         """Quit the menu bar app."""
+        # Stop the web UI server
+        if hasattr(self, '_webui'):
+            self._webui.stop()
         rumps.quit_application()
 
 

@@ -29,6 +29,7 @@ dependencies = [
     "cryptography>=41.0",
     "rich>=13.0",
     "rumps>=0.4.0; sys_platform == 'darwin'",
+    "Flask>=2.0",
 ]
 
 [project.optional-dependencies]
