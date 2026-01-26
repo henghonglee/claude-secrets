@@ -465,10 +465,22 @@ def run_server(timeout_seconds: int = 3600) -> None:
     write_pid_file()
     atexit.register(remove_pid_file)
 
+    def cleanup_and_exit(code: int = 0) -> None:
+        """Clean up and exit without triggering Python's finalization race."""
+        remove_pid_file()
+        # Close stdin to unblock any AnyIO worker threads still reading
+        # This prevents the _enter_buffered_busy fatal error in Python 3.14+
+        try:
+            sys.stdin.close()
+        except Exception:
+            pass
+        # Use os._exit to avoid the race condition between finalization
+        # and worker threads that are blocked on I/O
+        os._exit(code)
+
     # Clean up PID file on signals
     def signal_handler(signum, frame):
-        remove_pid_file()
-        sys.exit(0)
+        cleanup_and_exit(0)
 
     signal.signal(signal.SIGTERM, signal_handler)
     signal.signal(signal.SIGINT, signal_handler)
@@ -476,5 +488,7 @@ def run_server(timeout_seconds: int = 3600) -> None:
     try:
         server = MCPSecretsServer(timeout_seconds=timeout_seconds)
         asyncio.run(server.run())
+    except (KeyboardInterrupt, SystemExit):
+        pass
     finally:
-        remove_pid_file()
+        cleanup_and_exit(0)
