@@ -3,11 +3,92 @@
 import os
 import subprocess
 from datetime import datetime
+from pathlib import Path
 
 import rumps
 
 from .vault import Vault
 from .config import CONFIG_DIR, LOG_FILE, consume_events
+
+def create_icon() -> bytes:
+    """Create a simple AI-themed menubar icon (18x18 PNG template)."""
+    import struct
+    import zlib
+
+    # 18x18 pixel icon - neural network / brain with lock concept
+    # Using a simple pattern: dots connected by lines, representing AI
+    # Black pixels on transparent background (template image)
+
+    width, height = 18, 18
+
+    # Define the icon as a simple bitmap pattern
+    # 1 = black (visible), 0 = transparent
+    pattern = [
+        "000000000000000000",
+        "000001111110000000",
+        "000011000011000000",
+        "000110000001100000",
+        "001100111100110000",
+        "001001111100100000",
+        "011001111100100000",
+        "010001111100010000",
+        "010000111000010000",
+        "010000111000010000",
+        "010000111000010000",
+        "011000111000110000",
+        "001100111001100000",
+        "000110000011000000",
+        "000011111110000000",
+        "000001111100000000",
+        "000000111000000000",
+        "000000000000000000",
+    ]
+
+    # Create RGBA pixel data (black with alpha)
+    pixels = []
+    for row in pattern:
+        row_pixels = []
+        for char in row:
+            if char == '1':
+                row_pixels.extend([0, 0, 0, 255])  # Black, fully opaque
+            else:
+                row_pixels.extend([0, 0, 0, 0])    # Transparent
+        pixels.append(bytes(row_pixels))
+
+    # Create PNG file
+    def png_chunk(chunk_type: bytes, data: bytes) -> bytes:
+        chunk_len = struct.pack(">I", len(data))
+        chunk_crc = struct.pack(">I", zlib.crc32(chunk_type + data) & 0xffffffff)
+        return chunk_len + chunk_type + data + chunk_crc
+
+    # PNG signature
+    png_signature = b'\x89PNG\r\n\x1a\n'
+
+    # IHDR chunk
+    ihdr_data = struct.pack(">IIBBBBB", width, height, 8, 6, 0, 0, 0)  # 8-bit RGBA
+    ihdr = png_chunk(b'IHDR', ihdr_data)
+
+    # IDAT chunk (compressed pixel data)
+    raw_data = b''
+    for row in pixels:
+        raw_data += b'\x00' + row  # Filter byte (none) + row data
+    compressed = zlib.compress(raw_data, 9)
+    idat = png_chunk(b'IDAT', compressed)
+
+    # IEND chunk
+    iend = png_chunk(b'IEND', b'')
+
+    return png_signature + ihdr + idat + iend
+
+
+def get_icon_path() -> Path:
+    """Get path to menubar icon, creating it if needed."""
+    icon_path = CONFIG_DIR / "icon.png"
+    if not icon_path.exists():
+        CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+        icon_data = create_icon()
+        icon_path.write_bytes(icon_data)
+    return icon_path
 
 
 def notify(title: str, subtitle: str = "", message: str = "", sound: bool = True):
@@ -68,23 +149,21 @@ class MCPSecretsMenuBar(rumps.App):
     """Menu bar app for managing mcp-secrets."""
 
     def __init__(self):
+        icon_path = get_icon_path()
         super().__init__(
             "MCP Secrets",
-            icon=None,  # Will set dynamically
+            icon=str(icon_path),
+            template=True,  # Makes icon adapt to light/dark mode
             quit_button=None,  # Custom quit
         )
         self.vault = Vault()
         self.server_process = None
         self._pending_secrets = []  # Secrets that need to be added
-        self._update_icon()
         self._build_menu()
 
     def _update_icon(self):
-        """Update icon based on server status."""
-        if self._is_server_running():
-            self.title = "🔐"  # Lock icon when running
-        else:
-            self.title = "🔓"  # Unlocked when stopped
+        """Update icon - now handled by template mode."""
+        pass  # Icon auto-adapts to light/dark mode
 
     def _is_server_running(self):
         """Check if the MCP server is running."""
