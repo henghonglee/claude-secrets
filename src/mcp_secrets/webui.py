@@ -5,7 +5,7 @@ import threading
 from datetime import datetime
 from typing import Optional
 
-from flask import Flask, render_template_string, request, redirect, url_for, jsonify
+from flask import Flask, redirect, render_template_string, request, url_for
 
 from .vault import Vault
 

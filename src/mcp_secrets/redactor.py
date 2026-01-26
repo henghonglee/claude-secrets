@@ -18,8 +18,7 @@ def redact_secrets(text: str, secret_values: Iterable[str], placeholder: str = "
     """
     result = text
     for value in secret_values:
-        if value and len(value) > 0:
-            # Escape regex special characters in the secret value
+        if value:
             escaped = re.escape(value)
             result = re.sub(escaped, placeholder, result)
     return result
@@ -277,20 +276,3 @@ def apply_redaction_with_capture(
         result = redact_patterns(result)
 
     return result, captured
-
-
-def create_redactor(vault_secrets: dict[str, str]) -> callable:
-    """Create a redactor function for a set of secrets.
-
-    Args:
-        vault_secrets: Dict mapping secret names to values
-
-    Returns:
-        Function that redacts text
-    """
-    values = list(vault_secrets.values())
-
-    def redact(text: str) -> str:
-        return apply_redaction(text, secret_values=values)
-
-    return redact

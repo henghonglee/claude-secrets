@@ -1,8 +1,6 @@
 """Encrypted secret storage using Fernet."""
 
 import json
-import base64
-import secrets
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -163,23 +161,6 @@ class Vault:
     def list_by_tag(self, tag: str) -> list[Secret]:
         """List secrets filtered by tag."""
         return [s for s in self._secrets.values() if tag in s.tags and not s.is_expired()]
-
-    def get_all_for_search(self) -> list[dict]:
-        """Get all secrets with descriptions for semantic search."""
-        return [
-            {"name": s.name, "description": s.description, "tags": s.tags}
-            for s in self._secrets.values()
-            if not s.is_expired()
-        ]
-
-    def cleanup_expired(self) -> int:
-        """Remove all expired secrets. Returns count removed."""
-        expired = [name for name, s in self._secrets.items() if s.is_expired()]
-        for name in expired:
-            del self._secrets[name]
-        if expired:
-            self.save()
-        return len(expired)
 
     def export_encrypted(self) -> bytes:
         """Export all secrets as encrypted blob."""
