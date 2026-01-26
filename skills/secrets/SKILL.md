@@ -127,6 +127,24 @@ When using `request_secret` or `capture`, write descriptions that help future AI
 **Bad example**:
 > "AWS key"
 
+## Shell Portability
+
+**IMPORTANT**: Use portable shell commands to avoid cross-platform issues.
+
+| Don't Use | Use Instead | Why |
+|-----------|-------------|-----|
+| `echo -e "line1\nline2"` | `printf 'line1\nline2\n'` | `echo -e` is not portable (writes "-e" literally on macOS/zsh) |
+| `echo -n "no newline"` | `printf 'no newline'` | `echo -n` also has portability issues |
+
+For multi-line content, use heredocs:
+```bash
+cat >> ~/.aws/credentials << 'EOF'
+[profile-name]
+aws_access_key_id = {{KEY_ID}}
+aws_secret_access_key = {{SECRET}}
+EOF
+```
+
 ## Security Notes
 
 - Secrets are automatically redacted from command output

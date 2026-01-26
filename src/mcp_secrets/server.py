@@ -135,7 +135,15 @@ CAPTURE EXAMPLE (use when command outputs credentials):
 }
 
 INJECTION EXAMPLE (use when command needs credentials):
-{"command": "curl -H 'Authorization: Bearer {{API_TOKEN}}' https://api.example.com"}"""
+{"command": "curl -H 'Authorization: Bearer {{API_TOKEN}}' https://api.example.com"}
+
+SHELL PORTABILITY WARNING:
+- Do NOT use `echo -e` - it's not portable (writes "-e" literally on macOS/zsh)
+- Use `printf` for formatted output: printf 'line1\\nline2\\n'
+- Or use heredocs: cat << 'EOF'
+multiline
+content
+EOF"""
 
 LIST_SECRETS_DESCRIPTION = """List available secrets with their names, descriptions, and tags.
 
