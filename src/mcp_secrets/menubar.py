@@ -15,32 +15,33 @@ def create_icon() -> bytes:
     import struct
     import zlib
 
-    # 18x18 pixel icon - neural network / brain with lock concept
-    # Using a simple pattern: dots connected by lines, representing AI
+    # 18x18 pixel icon - padlock with AI/circuit aesthetic
+    # Lock shape with dotted/circuit-like details
     # Black pixels on transparent background (template image)
 
     width, height = 18, 18
 
     # Define the icon as a simple bitmap pattern
     # 1 = black (visible), 0 = transparent
+    # Padlock design with circuit-dot details
     pattern = [
         "000000000000000000",
-        "000001111110000000",
+        "000000111100000000",
+        "000001100110000000",
         "000011000011000000",
-        "000110000001100000",
+        "000011000011000000",
+        "000011000011000000",
+        "001111111111110000",
+        "001110000001110000",
+        "001100000000110000",
+        "001100011000110000",
         "001100111100110000",
-        "001001111100100000",
-        "011001111100100000",
-        "010001111100010000",
-        "010000111000010000",
-        "010000111000010000",
-        "010000111000010000",
-        "011000111000110000",
-        "001100111001100000",
-        "000110000011000000",
-        "000011111110000000",
-        "000001111100000000",
-        "000000111000000000",
+        "001100111100110000",
+        "001100011000110000",
+        "001100000000110000",
+        "001110000001110000",
+        "001111111111110000",
+        "000000000000000000",
         "000000000000000000",
     ]
 
