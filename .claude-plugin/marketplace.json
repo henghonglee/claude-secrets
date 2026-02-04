@@ -9,7 +9,7 @@
     {
       "name": "claude-secrets",
       "description": "Secure secrets management for CLI commands. Inject secrets, capture credentials from output, and manage permissions with encrypted storage.",
-      "version": "1.0.9",
+      "version": "1.1.0",
       "author": {
         "name": "henghonglee"
       },
