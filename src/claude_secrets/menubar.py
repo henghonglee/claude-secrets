@@ -317,17 +317,155 @@ def _show_dialog(title: str, message: str, ok_button: str = "OK", cancel_button:
 
 
 def _show_secret_request_dialog(name: str, description: str) -> str | None:
-    """Show a dialog for requesting a secret value."""
-    def escape(s: str) -> str:
-        return s.replace('\\', '\\\\').replace('"', '\\"').replace('\n', ' ')
+    """Show a dialog for requesting a secret value using a resizable text area."""
+    def escape_js(s: str) -> str:
+        return s.replace('\\', '\\\\').replace('"', '\\"').replace("'", "\\'").replace('\n', '\\n')
 
     script = f'''
-    display dialog "{escape(name)}" with title "Enter Secret Value" default answer "" buttons {{"Cancel", "Save"}} default button "Save" with hidden answer with icon note
-    text returned of result
+    ObjC.import('Cocoa');
+
+    var app = $.NSApplication.sharedApplication;
+    app.setActivationPolicy($.NSApplicationActivationPolicyAccessory);
+
+    // Create Edit menu so Cmd+V/C/X/A work
+    var menubar = $.NSMenu.alloc.init;
+    var editMenuItem = $.NSMenuItem.alloc.init;
+    var editMenu = $.NSMenu.alloc.initWithTitle($("Edit"));
+    editMenu.addItemWithTitleActionKeyEquivalent($("Cut"), "cut:", $("x"));
+    editMenu.addItemWithTitleActionKeyEquivalent($("Copy"), "copy:", $("c"));
+    editMenu.addItemWithTitleActionKeyEquivalent($("Paste"), "paste:", $("v"));
+    editMenu.addItemWithTitleActionKeyEquivalent($("Select All"), "selectAll:", $("a"));
+    editMenuItem.submenu = editMenu;
+    menubar.addItem(editMenuItem);
+    app.mainMenu = menubar;
+
+    var description = "{escape_js(description)}";
+    var hasDesc = description.length > 0;
+
+    var WIDTH = 440;
+    var HEIGHT = hasDesc ? 240 : 210;
+    var screen = $.NSScreen.mainScreen.frame;
+    var x = (screen.size.width - WIDTH) / 2;
+    var y = (screen.size.height - HEIGHT) / 2;
+
+    var panel = $.NSPanel.alloc.initWithContentRectStyleMaskBackingDefer(
+        $.NSMakeRect(x, y, WIDTH, HEIGHT),
+        $.NSWindowStyleMaskTitled | $.NSWindowStyleMaskClosable,
+        $.NSBackingStoreBuffered,
+        false
+    );
+    panel.title = $("Enter Secret Value");
+    panel.level = $.NSFloatingWindowLevel;
+    panel.releasedWhenClosed = false;
+
+    var content = panel.contentView;
+    var pad = 20;
+    var innerW = WIDTH - pad * 2;
+
+    // Name label
+    var label = $.NSTextField.alloc.initWithFrame($.NSMakeRect(pad, HEIGHT - 50, innerW, 22));
+    label.stringValue = $("{escape_js(name)}");
+    label.bezeled = false;
+    label.drawsBackground = false;
+    label.editable = false;
+    label.selectable = false;
+    label.font = $.NSFont.boldSystemFontOfSize(14);
+    content.addSubview(label);
+
+    // Description label (if present)
+    if (hasDesc) {{
+        var descLabel = $.NSTextField.alloc.initWithFrame($.NSMakeRect(pad, HEIGHT - 75, innerW, 18));
+        descLabel.stringValue = $(description);
+        descLabel.bezeled = false;
+        descLabel.drawsBackground = false;
+        descLabel.editable = false;
+        descLabel.selectable = false;
+        descLabel.font = $.NSFont.systemFontOfSize(12);
+        descLabel.textColor = $.NSColor.secondaryLabelColor;
+        content.addSubview(descLabel);
+    }}
+
+    // Scroll view + text view
+    var scrollView = $.NSScrollView.alloc.initWithFrame($.NSMakeRect(pad, 55, innerW, 100));
+    scrollView.hasVerticalScroller = true;
+    scrollView.autohidesScrollers = true;
+    scrollView.borderType = $.NSBezelBorder;
+
+    var textView = $.NSTextView.alloc.initWithFrame($.NSMakeRect(0, 0, innerW - 4, 100));
+    textView.minSize = $.NSMakeSize(0, 100);
+    textView.maxSize = $.NSMakeSize(1e7, 1e7);
+    textView.verticallyResizable = true;
+    textView.horizontallyResizable = false;
+    textView.autoresizingMask = $.NSViewWidthSizable;
+    textView.font = $.NSFont.monospacedSystemFontOfSizeWeight(12, 0);
+    textView.textContainer.containerSize = $.NSMakeSize(innerW - 4, 1e7);
+    textView.textContainer.widthTracksTextView = true;
+    textView.allowsUndo = true;
+
+    scrollView.documentView = textView;
+    content.addSubview(scrollView);
+
+    // Buttons
+    var cancelBtn = $.NSButton.alloc.initWithFrame($.NSMakeRect(WIDTH - pad - 170, 15, 80, 30));
+    cancelBtn.title = $("Cancel");
+    cancelBtn.bezelStyle = $.NSBezelStyleRounded;
+    cancelBtn.keyEquivalent = $("\\x1b");  // Escape key
+
+    var saveBtn = $.NSButton.alloc.initWithFrame($.NSMakeRect(WIDTH - pad - 80, 15, 80, 30));
+    saveBtn.title = $("Save");
+    saveBtn.bezelStyle = $.NSBezelStyleRounded;
+    saveBtn.keyEquivalent = $("\\r");  // Enter key
+
+    content.addSubview(cancelBtn);
+    content.addSubview(saveBtn);
+
+    // Result tracking
+    var result = "";
+    var done = false;
+
+    ObjC.registerSubclass({{
+        name: 'DialogHandler',
+        methods: {{
+            'doSave:': {{
+                types: ['void', ['id']],
+                implementation: function(sender) {{
+                    result = textView.string.js;
+                    done = true;
+                    app.stopModal;
+                    panel.close;
+                }}
+            }},
+            'doCancel:': {{
+                types: ['void', ['id']],
+                implementation: function(sender) {{
+                    done = true;
+                    app.stopModal;
+                    panel.close;
+                }}
+            }}
+        }}
+    }});
+
+    var handler = $.DialogHandler.alloc.init;
+    saveBtn.target = handler;
+    saveBtn.action = 'doSave:';
+    cancelBtn.target = handler;
+    cancelBtn.action = 'doCancel:';
+
+    panel.makeKeyAndOrderFront(null);
+    panel.makeFirstResponder(textView);
+    app.activateIgnoringOtherApps(true);
+    app.runModalForWindow(panel);
+
+    result;
     '''
-    result = subprocess.run(["osascript", "-e", script], capture_output=True, text=True)
+    result = subprocess.run(
+        ["osascript", "-l", "JavaScript", "-e", script],
+        capture_output=True, text=True,
+    )
     if result.returncode == 0:
-        return result.stdout.strip()
+        value = result.stdout.strip()
+        return value if value else None
     return None
 
 

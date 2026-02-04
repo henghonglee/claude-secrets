@@ -91,24 +91,46 @@ class PermissionManager:
 
 def request_permission(secret_name: str, description: str, command: str) -> bool:
     """Request permission via native macOS dialog. Blocks until user responds."""
+    def escape_js(s: str) -> str:
+        return s.replace('\\', '\\\\').replace('"', '\\"').replace("'", "\\'").replace('\n', '\\n')
+
+    desc_line = f'"{escape_js(description)}"' if description else '""'
+    cmd_line = f'"{escape_js(command)}"' if command else '""'
+
     script = f'''
-    display dialog "{_escape_applescript(secret_name)}" with title "Allow Secret Access?" buttons {{"Deny", "Allow"}} default button "Allow" cancel button "Deny" with icon caution
+    ObjC.import('Cocoa');
+
+    var app = $.NSApplication.sharedApplication;
+    app.setActivationPolicy($.NSApplicationActivationPolicyAccessory);
+
+    var alert = $.NSAlert.alloc.init;
+    alert.messageText = $("Allow Secret Access?");
+
+    var info = "{escape_js(secret_name)}";
+    var desc = {desc_line};
+    var cmd = {cmd_line};
+    if (desc.length > 0) info += "\\n" + desc;
+    if (cmd.length > 0) info += "\\n\\nCommand:\\n" + cmd;
+    alert.informativeText = $(info);
+
+    alert.addButtonWithTitle($("Allow"));
+    alert.addButtonWithTitle($("Deny"));
+    alert.alertStyle = $.NSAlertStyleWarning;
+
+    app.activateIgnoringOtherApps(true);
+    var response = alert.runModal;
+    response === $.NSAlertFirstButtonReturn;
     '''
 
     try:
         result = subprocess.run(
-            ["osascript", "-e", script],
+            ["osascript", "-l", "JavaScript", "-e", script],
             capture_output=True,
             text=True,
             timeout=120
         )
-        return result.returncode == 0
+        return result.returncode == 0 and result.stdout.strip() == "true"
     except subprocess.TimeoutExpired:
         return False
     except Exception:
         return False
-
-
-def _escape_applescript(s: str) -> str:
-    """Escape special characters for AppleScript."""
-    return s.replace('\\', '\\\\').replace('"', '\\"').replace('\n', ' ')
