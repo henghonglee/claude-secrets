@@ -4,7 +4,7 @@ description: Request to add a new secret
 
 The user wants to add a new secret. Parse $ARGUMENTS to get the secret name.
 
-If a name was provided (e.g., `/mcp-secrets:add GITHUB_TOKEN`):
+If a name was provided (e.g., `/claude-secrets:add GITHUB_TOKEN`):
 1. Ask the user what the secret is for
 2. Call `request_secret` with the name and a description based on their answer
 

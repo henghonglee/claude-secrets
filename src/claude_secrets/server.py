@@ -186,7 +186,7 @@ class MCPSecretsServer:
         self.vault = Vault()
         self.vault.load()
         self.permissions = PermissionManager(timeout_seconds)
-        self.server = Server("mcp-secrets")
+        self.server = Server("claude-secrets")
         self._list_secrets_called = False
         self._last_listed_secrets: set[str] = set()
         self._setup_handlers()

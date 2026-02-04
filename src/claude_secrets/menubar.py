@@ -1,4 +1,4 @@
-"""macOS menu bar application for mcp-secrets."""
+"""macOS menu bar application for claude-secrets."""
 
 import os
 import subprocess
@@ -24,12 +24,12 @@ def run_menubar():
 
 
 class MCPSecretsMenuBar(rumps.App):
-    """Menu bar app for managing mcp-secrets."""
+    """Menu bar app for managing claude-secrets."""
 
     def __init__(self):
         icon_path = _get_icon_path()
         super().__init__(
-            "MCP Secrets",
+            "Claude Secrets",
             icon=str(icon_path),
             template=True,
             quit_button=None,
@@ -214,7 +214,7 @@ class MCPSecretsMenuBar(rumps.App):
             self.vault.load()
             self.vault.add(name, value, description)
             _notify(
-                title="MCP Secrets",
+                title="Claude Secrets",
                 subtitle="Secret Added",
                 message=f"✓ Added: {name}",
             )

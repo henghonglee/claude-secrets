@@ -4,15 +4,15 @@ import pytest
 from pathlib import Path
 from unittest.mock import patch
 
-from mcp_secrets.vault import Vault, Secret
+from claude_secrets.vault import Vault, Secret
 
 
 @pytest.fixture
 def temp_config_dir(tmp_path):
     """Create a temporary config directory."""
-    with patch("mcp_secrets.vault.CONFIG_DIR", tmp_path):
-        with patch("mcp_secrets.vault.VAULT_FILE", tmp_path / "vault.enc"):
-            with patch("mcp_secrets.vault.KEY_FILE", tmp_path / "key"):
+    with patch("claude_secrets.vault.CONFIG_DIR", tmp_path):
+        with patch("claude_secrets.vault.VAULT_FILE", tmp_path / "vault.enc"):
+            with patch("claude_secrets.vault.KEY_FILE", tmp_path / "key"):
                 yield tmp_path
 
 

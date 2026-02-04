@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build script for MCP Secrets macOS app using PyInstaller."""
+"""Build script for Claude Secrets macOS app using PyInstaller."""
 
 import os
 import subprocess
@@ -37,10 +37,10 @@ a = Analysis(
     binaries=[],
     datas=[],
     hiddenimports=[
-        'mcp_secrets',
-        'mcp_secrets.vault',
-        'mcp_secrets.config',
-        'mcp_secrets.menubar',
+        'claude_secrets',
+        'claude_secrets.vault',
+        'claude_secrets.config',
+        'claude_secrets.menubar',
         'rumps',
         'keyring',
         'keyring.backends',
@@ -87,7 +87,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='MCP Secrets',
+    name='Claude Secrets',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -108,17 +108,17 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='MCP Secrets',
+    name='Claude Secrets',
 )
 
 app = BUNDLE(
     coll,
-    name='MCP Secrets.app',
+    name='Claude Secrets.app',
     icon='app_icon.icns',
-    bundle_identifier='com.mcpsecrets.menubar',
+    bundle_identifier='com.claudesecrets.menubar',
     info_plist={
-        'CFBundleName': 'MCP Secrets',
-        'CFBundleDisplayName': 'MCP Secrets',
+        'CFBundleName': 'Claude Secrets',
+        'CFBundleDisplayName': 'Claude Secrets',
         'CFBundleVersion': '1.0.0',
         'CFBundleShortVersionString': '1.0.0',
         'LSUIElement': True,
@@ -129,12 +129,12 @@ app = BUNDLE(
 '''
 
     # Write spec file
-    Path("MCPSecrets.spec").write_text(spec_content)
+    Path("ClaudeSecrets.spec").write_text(spec_content)
 
     # Run PyInstaller
     print("Building app with PyInstaller...")
     result = subprocess.run(
-        [sys.executable, "-m", "PyInstaller", "MCPSecrets.spec", "--noconfirm"],
+        [sys.executable, "-m", "PyInstaller", "ClaudeSecrets.spec", "--noconfirm"],
         capture_output=False
     )
 
@@ -143,7 +143,7 @@ app = BUNDLE(
         sys.exit(1)
 
     # Check if app was created
-    app_path = Path("dist/MCP Secrets.app")
+    app_path = Path("dist/Claude Secrets.app")
     if not app_path.exists():
         print("Error: App bundle was not created")
         sys.exit(1)
@@ -158,7 +158,7 @@ def create_dmg():
     """Create a DMG file for distribution."""
     print("\nCreating DMG...")
 
-    dmg_name = "MCP-Secrets-1.0.0.dmg"
+    dmg_name = "Claude-Secrets-1.0.0.dmg"
     dmg_temp = Path("dist/temp.dmg")
     dmg_final = Path(f"dist/{dmg_name}")
 
@@ -171,7 +171,7 @@ def create_dmg():
         "hdiutil", "create",
         "-size", "200m",
         "-fs", "HFS+",
-        "-volname", "MCP Secrets",
+        "-volname", "Claude Secrets",
         str(dmg_temp)
     ], check=True)
 
@@ -198,7 +198,7 @@ def create_dmg():
         # Copy the app
         subprocess.run([
             "cp", "-R",
-            "dist/MCP Secrets.app",
+            "dist/Claude Secrets.app",
             f"{mount_point}/"
         ], check=True)
 
@@ -230,7 +230,7 @@ def create_dmg():
     print(f"DMG created at: dist/{dmg_name}")
     print(f"\nTo install:")
     print(f"  1. Open dist/{dmg_name}")
-    print(f"  2. Drag 'MCP Secrets' to Applications")
+    print(f"  2. Drag 'Claude Secrets' to Applications")
     print(f"  3. Launch from Applications or Spotlight")
 
 

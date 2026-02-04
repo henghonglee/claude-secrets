@@ -1,4 +1,4 @@
-# MCP Secrets
+# Claude Secrets
 
 A secure secrets management plugin for Claude Code and MCP clients. Enables AI assistants to safely handle credentials with user approval, automatic redaction, and secret capture from command output.
 
@@ -17,7 +17,7 @@ A secure secrets management plugin for Claude Code and MCP clients. Enables AI a
 ### One-Line Install (Recommended)
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/henghonglee/mcp-secrets/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/henghonglee/claude-secrets/main/install.sh | bash
 ```
 
 This automatically:
@@ -30,30 +30,30 @@ This automatically:
 ### Manual Installation
 
 ```bash
-pipx install git+https://github.com/henghonglee/mcp-secrets.git
-mcp-secrets init
+pipx install git+https://github.com/henghonglee/claude-secrets.git
+ccs init
 ```
 
 ### From Source
 
 ```bash
-git clone https://github.com/henghonglee/mcp-secrets.git
-cd mcp-secrets
+git clone https://github.com/henghonglee/claude-secrets.git
+cd claude-secrets
 pip install -e .
-mcp-secrets init
+ccs init
 ```
 
 ## Quick Start
 
 ```bash
 # Initialize vault + start menubar + enable auto-start on login
-mcp-secrets init
+ccs init
 
 # Add a secret with description (helps LLMs understand what it's for)
-mcp-secrets add AWS_ACCESS_KEY
+ccs add AWS_ACCESS_KEY
 
 # Check status
-mcp-secrets status
+ccs status
 ```
 
 The `init` command automatically:
@@ -62,11 +62,11 @@ The `init` command automatically:
 - Starts the menu bar app
 - Enables auto-start on login (macOS)
 
-### Plugin-Only Install (if mcp-secrets is already installed)
+### Plugin-Only Install (if claude-secrets is already installed)
 
 ```bash
-claude plugin marketplace add henghonglee/mcp-secrets
-claude plugin install mcp-secrets@henghonglee-mcp-secrets
+claude plugin marketplace add henghonglee/claude-secrets
+claude plugin install claude-secrets@henghonglee-claude-secrets
 ```
 
 ## Claude Code Commands
@@ -75,9 +75,9 @@ When installed as a plugin:
 
 | Command | Description |
 |---------|-------------|
-| `/mcp-secrets:list` | List all available secrets |
-| `/mcp-secrets:add [NAME]` | Add a new secret |
-| `/mcp-secrets:run <command>` | Run a command with secret injection |
+| `/claude-secrets:list` | List all available secrets |
+| `/claude-secrets:add [NAME]` | Add a new secret |
+| `/claude-secrets:run <command>` | Run a command with secret injection |
 
 ## MCP Configuration (Non-Plugin)
 
@@ -87,7 +87,7 @@ For Claude Desktop or other MCP clients, add to your configuration:
 {
   "mcpServers": {
     "secrets": {
-      "command": "mcp-secrets",
+      "command": "ccs",
       "args": ["serve"]
     }
   }
@@ -178,14 +178,14 @@ Get current session permission status for secrets.
 ## Menu Bar App (macOS)
 
 The menu bar app provides:
-- Server status indicator (🔐 running / 🔓 stopped)
+- Server status indicator
 - List of stored secrets with expiry times
 - Native dialogs for secret requests
 - Notifications when secrets are captured or expiring
 
 Start with:
 ```bash
-mcp-secrets-menubar
+claude-secrets-menubar
 ```
 
 ## Security Model
@@ -194,36 +194,36 @@ mcp-secrets-menubar
 - **Permission prompts** - User must approve each secret's use
 - **Session expiry** - Permissions auto-expire (default: 1 hour)
 - **Output redaction** - Secrets automatically removed from command output
-- **Audit logging** - All secret access logged to `~/.mcp-secrets/audit.log`
+- **Audit logging** - All secret access logged to `~/.claude-secrets/audit.log`
 
 ## Uninstalling
 
 ### One-Line Uninstall
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/henghonglee/mcp-secrets/main/uninstall.sh | bash
+curl -sSL https://raw.githubusercontent.com/henghonglee/claude-secrets/main/uninstall.sh | bash
 ```
 
 ### Manual Uninstall
 
 ```bash
-mcp-secrets uninstall      # Stops menubar, removes plugin, keeps secrets
-pipx uninstall mcp-secrets
+ccs uninstall      # Stops menubar, removes plugin, keeps secrets
+pipx uninstall claude-secrets
 ```
 
 ### Delete Everything (including secrets)
 
 ```bash
-mcp-secrets uninstall --delete-vault
-pipx uninstall mcp-secrets
+ccs uninstall --delete-vault
+pipx uninstall claude-secrets
 ```
 
-Your secrets are preserved by default in `~/.mcp-secrets/` so you can reinstall later without losing them.
+Your secrets are preserved by default in `~/.claude-secrets/` so you can reinstall later without losing them.
 
 ## Plugin Structure
 
 ```
-mcp-secrets/
+claude-secrets/
 ├── .claude-plugin/
 │   ├── plugin.json          # Plugin manifest
 │   └── marketplace.json     # Marketplace manifest (for plugin distribution)
@@ -232,16 +232,16 @@ mcp-secrets/
 │   └── secrets/
 │       └── SKILL.md         # Teaches Claude when/how to use secrets
 ├── commands/
-│   ├── list.md              # /mcp-secrets:list command
-│   ├── add.md               # /mcp-secrets:add command
-│   └── run.md               # /mcp-secrets:run command
+│   ├── list.md              # /claude-secrets:list command
+│   ├── add.md               # /claude-secrets:add command
+│   └── run.md               # /claude-secrets:run command
 └── src/
-    └── mcp_secrets/         # Python package
+    └── claude_secrets/      # Python package
 ```
 
 ## Configuration
 
-Configuration stored at `~/.mcp-secrets/config.json`:
+Configuration stored at `~/.claude-secrets/config.json`:
 
 ```json
 {
@@ -251,7 +251,7 @@ Configuration stored at `~/.mcp-secrets/config.json`:
 
 Set values with:
 ```bash
-mcp-secrets config set session_timeout 7200
+ccs config set session_timeout 7200
 ```
 
 ## Development
@@ -264,7 +264,7 @@ pip install -e ".[dev]"
 pytest
 
 # Run with coverage
-pytest --cov=mcp_secrets
+pytest --cov=claude_secrets
 
 # Test plugin locally
 claude --plugin-dir ./

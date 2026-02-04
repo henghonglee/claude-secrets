@@ -2,7 +2,7 @@
   "mcpServers": {
     "secrets": {
       "command": "bash",
-      "args": ["-l", "-c", "mcp-secrets serve"],
+      "args": ["-l", "-c", "ccs serve"],
       "env": {}
     }
   }

@@ -48,8 +48,8 @@ htmlcov/
 *.spec
 
 # Local config (don't commit user's secrets!)
-.mcp-secrets/
+.claude-secrets/
 
 # Build artifacts
 *.icns
-MCPSecrets.app/
+ClaudeSecrets.app/

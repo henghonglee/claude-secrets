@@ -1,4 +1,4 @@
-"""Flask web UI for mcp-secrets management."""
+"""Flask web UI for claude-secrets management."""
 
 import socket
 import threading
@@ -16,7 +16,7 @@ BASE_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ title }} - MCP Secrets</title>
+    <title>{{ title }} - Claude Secrets</title>
     <style>
         * {
             box-sizing: border-box;
@@ -509,7 +509,7 @@ def find_available_port(preferred: int = 5789) -> int:
 def create_app(vault: Optional[Vault] = None) -> Flask:
     """Create Flask application."""
     app = Flask(__name__)
-    app.secret_key = 'mcp-secrets-webui-session-key'
+    app.secret_key = 'claude-secrets-webui-session-key'
 
     # Use provided vault or create new one
     _vault = vault or Vault()

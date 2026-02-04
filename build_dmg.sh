@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "=== Building MCP Secrets macOS App ==="
+echo "=== Building Claude Secrets macOS App ==="
 
 # Ensure we're in the project directory
 cd "$(dirname "$0")"
@@ -27,16 +27,16 @@ echo "Building .app bundle..."
 python setup_app.py py2app
 
 # Verify the app was built
-if [ ! -d "dist/MCP Secrets.app" ]; then
+if [ ! -d "dist/Claude Secrets.app" ]; then
     echo "Error: App bundle was not created"
     exit 1
 fi
 
-echo "App bundle created at: dist/MCP Secrets.app"
+echo "App bundle created at: dist/Claude Secrets.app"
 
 # Create DMG
 echo "Creating DMG..."
-DMG_NAME="MCP-Secrets-1.0.0.dmg"
+DMG_NAME="Claude-Secrets-1.0.0.dmg"
 DMG_TEMP="dist/temp.dmg"
 DMG_FINAL="dist/$DMG_NAME"
 
@@ -44,26 +44,26 @@ DMG_FINAL="dist/$DMG_NAME"
 rm -f "$DMG_FINAL"
 
 # Create a temporary DMG
-hdiutil create -size 200m -fs HFS+ -volname "MCP Secrets" "$DMG_TEMP"
+hdiutil create -size 200m -fs HFS+ -volname "Claude Secrets" "$DMG_TEMP"
 
 # Mount the DMG
 MOUNT_POINT=$(hdiutil attach "$DMG_TEMP" | grep "/Volumes" | awk '{print $3}')
 
 # Copy the app
-cp -R "dist/MCP Secrets.app" "$MOUNT_POINT/"
+cp -R "dist/Claude Secrets.app" "$MOUNT_POINT/"
 
 # Create a symlink to Applications
 ln -s /Applications "$MOUNT_POINT/Applications"
 
 # Create a background instructions file
 cat > "$MOUNT_POINT/.background_instructions.txt" << 'EOF'
-Drag MCP Secrets to Applications to install.
+Drag Claude Secrets to Applications to install.
 
 After installation:
 1. Open Terminal
-2. Run: pip install mcp-secrets
-3. Run: mcp-secrets init
-4. Launch MCP Secrets from Applications
+2. Run: pip install claude-secrets
+3. Run: ccs init
+4. Launch Claude Secrets from Applications
 EOF
 
 # Unmount
@@ -81,5 +81,5 @@ echo "DMG created at: dist/$DMG_NAME"
 echo ""
 echo "To install:"
 echo "  1. Open the DMG"
-echo "  2. Drag 'MCP Secrets' to Applications"
+echo "  2. Drag 'Claude Secrets' to Applications"
 echo "  3. Launch from Applications or Spotlight"

@@ -1,6 +1,6 @@
-# MCP Secrets Proxy
+# Claude Secrets Proxy
 
-**Project Location:** `/Users/henghonglee/ai-projects/mcp-secrets/`
+**Project Location:** `/Users/henghonglee/ai-projects/claude-secrets/`
 
 An intelligent CLI secrets manager for any MCP-compatible client, installable via Homebrew.
 
@@ -20,27 +20,27 @@ Works with any MCP client: Claude Code, Cursor, Continue, Zed, custom integratio
 ## Installation
 
 ```bash
-brew tap lightsprint/mcp-secrets
-brew install mcp-secrets
+brew tap lightsprint/claude-secrets
+brew install claude-secrets
 ```
 
 After installation:
 ```bash
 # Initialize the vault (creates encrypted storage)
-mcp-secrets init
+claude-secrets init
 
 # Start the MCP server (or configure to run on login)
-mcp-secrets serve
+claude-secrets serve
 
 # Show MCP configuration snippet
-mcp-secrets config
+claude-secrets config
 ```
 
 ## Architecture
 
 ```
 ┌─────────────────┐         ┌─────────────────────────────────────────────┐
-│   MCP Client    │────────▶│         MCP Secrets Proxy                   │
+│   MCP Client    │────────▶│         Claude Secrets Proxy                   │
 │ (any client)    │         │                                             │
 └─────────────────┘         │  ┌───────────────────────────────────────┐  │
                             │  │           Ollama (Local LLM)          │  │
@@ -51,7 +51,7 @@ mcp-secrets config
                             │                    │                        │
                             │  ┌─────────────────┴─────────────────────┐  │
                             │  │         Secret Vault                  │  │
-                            │  │  ~/.mcp-secrets/vault.enc             │  │
+                            │  │  ~/.claude-secrets/vault.enc             │  │
                             │  └───────────────────────────────────────┘  │
                             │                    │                        │
                             │  ┌─────────────────┴─────────────────────┐  │
@@ -63,13 +63,13 @@ mcp-secrets config
 
 ## CLI Commands
 
-### `mcp-secrets init`
+### `claude-secrets init`
 Initialize the secrets vault.
-- Creates `~/.mcp-secrets/` directory
+- Creates `~/.claude-secrets/` directory
 - Generates encryption key and stores in macOS Keychain
 - Creates empty encrypted vault
 
-### `mcp-secrets serve`
+### `claude-secrets serve`
 Start the MCP server.
 - Runs on stdio (for MCP integration)
 - Options:
@@ -77,52 +77,52 @@ Start the MCP server.
   - `--session-timeout <duration>` permission expiry time (default: 1h, e.g., 30m, 2h, 8h)
 - **Requires Ollama**: Will refuse to start if Ollama is not running
 
-### `mcp-secrets add <name>`
+### `claude-secrets add <name>`
 Add a new secret interactively.
 ```bash
-mcp-secrets add AWS_PROD_KEY
+claude-secrets add AWS_PROD_KEY
 # Prompts for:
 #   Value: ********
 #   Description: Production AWS access key for account 123456
 #   Tags (comma-separated): aws, production
 ```
 
-### `mcp-secrets list`
+### `claude-secrets list`
 List all secrets (names + descriptions only).
 ```bash
-mcp-secrets list
+claude-secrets list
 # AWS_PROD_KEY      - Production AWS access key for account 123456 [aws, production]
 # GITHUB_TOKEN      - Personal access token for github.com/user [github, api]
 ```
 
-### `mcp-secrets search <query>`
+### `claude-secrets search <query>`
 Semantic search for secrets.
 ```bash
-mcp-secrets search "AWS credentials for production"
+claude-secrets search "AWS credentials for production"
 # 1. AWS_PROD_KEY (score: 0.95) - Production AWS access key
 # 2. AWS_DEV_KEY (score: 0.42) - Development AWS access key
 ```
 
-### `mcp-secrets remove <name>`
+### `claude-secrets remove <name>`
 Remove a secret from the vault.
 
-### `mcp-secrets export`
+### `claude-secrets export`
 Export secrets (encrypted) for backup.
 
-### `mcp-secrets import <file>`
+### `claude-secrets import <file>`
 Import secrets from backup.
 
-### `mcp-secrets config`
+### `claude-secrets config`
 Print MCP server configuration snippet for your client.
 ```bash
-mcp-secrets config
+claude-secrets config
 # Outputs JSON/YAML config to add to your MCP client
 ```
 
-### `mcp-secrets logs`
+### `claude-secrets logs`
 View recent audit logs.
 ```bash
-mcp-secrets logs --tail 20
+claude-secrets logs --tail 20
 # 2024-01-15 10:30:22 - ACCESS - AWS_PROD_KEY - granted - aws s3 ls
 # 2024-01-15 10:30:45 - DETECT - Found potential secret in output
 ```
@@ -152,7 +152,7 @@ Execute a CLI command with secret injection and output processing.
   "stderr": "...",
   "exit_code": 0,
   "secrets_detected": 1,
-  "message": "Found 1 potential secret in output. Run 'mcp-secrets pending' to review."
+  "message": "Found 1 potential secret in output. Run 'claude-secrets pending' to review."
 }
 ```
 
@@ -235,7 +235,7 @@ Command executes, output returned (redacted)
 
 ## LLM Integration
 
-An LLM is **required** for mcp-secrets to function. The server will refuse to start if it cannot connect to the configured LLM endpoint.
+An LLM is **required** for claude-secrets to function. The server will refuse to start if it cannot connect to the configured LLM endpoint.
 
 Supports any OpenAI-compatible chat completions API:
 - **Ollama** (recommended for local/private use)
@@ -248,18 +248,18 @@ Supports any OpenAI-compatible chat completions API:
 ### Configuration
 ```bash
 # Option 1: Ollama (default, local)
-mcp-secrets config set llm.base_url http://localhost:11434/v1
-mcp-secrets config set llm.model llama3.2:3b
+claude-secrets config set llm.base_url http://localhost:11434/v1
+claude-secrets config set llm.model llama3.2:3b
 
 # Option 2: OpenAI
-mcp-secrets config set llm.base_url https://api.openai.com/v1
-mcp-secrets config set llm.model gpt-4o-mini
-mcp-secrets config set llm.api_key sk-...
+claude-secrets config set llm.base_url https://api.openai.com/v1
+claude-secrets config set llm.model gpt-4o-mini
+claude-secrets config set llm.api_key sk-...
 
 # Option 3: Any OpenAI-compatible endpoint
-mcp-secrets config set llm.base_url https://your-endpoint.com/v1
-mcp-secrets config set llm.model your-model
-mcp-secrets config set llm.api_key your-key
+claude-secrets config set llm.base_url https://your-endpoint.com/v1
+claude-secrets config set llm.model your-model
+claude-secrets config set llm.api_key your-key
 ```
 
 ### Ollama Setup (Recommended for Local Use)
@@ -297,12 +297,12 @@ Return JSON: {matches: [{name, score, reason}]}"
 ## Project Structure
 
 ```
-mcp-secrets/
+claude-secrets/
 ├── pyproject.toml              # Package config, dependencies, entry points
 ├── README.md
 ├── LICENSE
 ├── src/
-│   └── mcp_secrets/
+│   └── claude_secrets/
 │       ├── __init__.py
 │       ├── cli.py              # Click CLI commands
 │       ├── server.py           # MCP server implementation
@@ -316,7 +316,7 @@ mcp-secrets/
 │       ├── redactor.py         # Output redaction
 │       └── config.py           # Configuration management
 ├── homebrew/
-│   └── mcp-secrets.rb          # Homebrew formula
+│   └── claude-secrets.rb          # Homebrew formula
 └── tests/
     ├── test_vault.py
     ├── test_detector.py
@@ -343,8 +343,8 @@ dependencies = [
 ```ruby
 class McpSecrets < Formula
   desc "Intelligent secrets proxy for MCP clients"
-  homepage "https://github.com/lightsprint/mcp-secrets"
-  url "https://github.com/lightsprint/mcp-secrets/archive/refs/tags/v1.0.0.tar.gz"
+  homepage "https://github.com/lightsprint/claude-secrets"
+  url "https://github.com/lightsprint/claude-secrets/archive/refs/tags/v1.0.0.tar.gz"
   sha256 "..."
   license "MIT"
 
@@ -357,35 +357,35 @@ class McpSecrets < Formula
   def caveats
     <<~EOS
       To get started:
-        mcp-secrets init
-        mcp-secrets config  # Shows how to add to your MCP client
+        claude-secrets init
+        claude-secrets config  # Shows how to add to your MCP client
 
       Then start the server:
-        mcp-secrets serve
+        claude-secrets serve
 
       Or run as a background service:
-        brew services start mcp-secrets
+        brew services start claude-secrets
     EOS
   end
 
   service do
-    run [opt_bin/"mcp-secrets", "serve"]
+    run [opt_bin/"claude-secrets", "serve"]
     keep_alive true
-    log_path var/"log/mcp-secrets.log"
+    log_path var/"log/claude-secrets.log"
   end
 end
 ```
 
 ## MCP Client Configuration
 
-After running `mcp-secrets config`, add to your MCP client's configuration:
+After running `claude-secrets config`, add to your MCP client's configuration:
 
 **Example (JSON):**
 ```json
 {
   "mcpServers": {
     "secrets": {
-      "command": "mcp-secrets",
+      "command": "claude-secrets",
       "args": ["serve"]
     }
   }
@@ -397,17 +397,17 @@ After running `mcp-secrets config`, add to your MCP client's configuration:
 | File | Purpose |
 |------|---------|
 | `pyproject.toml` | Package metadata, dependencies, CLI entry points |
-| `src/mcp_secrets/cli.py` | Click-based CLI commands |
-| `src/mcp_secrets/server.py` | MCP server with tool definitions |
-| `src/mcp_secrets/vault.py` | Encrypted secret storage with Fernet |
-| `src/mcp_secrets/permissions.py` | Session permission tracking |
-| `src/mcp_secrets/llm.py` | OpenAI-compatible LLM client |
-| `src/mcp_secrets/detector.py` | LLM secret detection in output |
-| `src/mcp_secrets/search.py` | Semantic search implementation |
-| `src/mcp_secrets/injector.py` | {{PLACEHOLDER}} substitution |
-| `src/mcp_secrets/executor.py` | Subprocess execution |
-| `src/mcp_secrets/redactor.py` | Output sanitization |
-| `homebrew/mcp-secrets.rb` | Homebrew formula |
+| `src/claude_secrets/cli.py` | Click-based CLI commands |
+| `src/claude_secrets/server.py` | MCP server with tool definitions |
+| `src/claude_secrets/vault.py` | Encrypted secret storage with Fernet |
+| `src/claude_secrets/permissions.py` | Session permission tracking |
+| `src/claude_secrets/llm.py` | OpenAI-compatible LLM client |
+| `src/claude_secrets/detector.py` | LLM secret detection in output |
+| `src/claude_secrets/search.py` | Semantic search implementation |
+| `src/claude_secrets/injector.py` | {{PLACEHOLDER}} substitution |
+| `src/claude_secrets/executor.py` | Subprocess execution |
+| `src/claude_secrets/redactor.py` | Output sanitization |
+| `homebrew/claude-secrets.rb` | Homebrew formula |
 
 ## Implementation Phases
 
@@ -438,31 +438,31 @@ After running `mcp-secrets config`, add to your MCP client's configuration:
 1. **Install locally**:
    ```bash
    pip install -e .
-   mcp-secrets init
+   claude-secrets init
    ```
 
 2. **Add test secret**:
    ```bash
-   mcp-secrets add TEST_KEY
+   claude-secrets add TEST_KEY
    # Value: secret123
    # Description: Test key for verification
    ```
 
 3. **Test CLI**:
    ```bash
-   mcp-secrets list
-   mcp-secrets search "test key"
+   claude-secrets list
+   claude-secrets search "test key"
    ```
 
 4. **Test MCP server**:
    ```bash
-   mcp-secrets serve &
+   claude-secrets serve &
    # In another terminal, test with MCP client
    ```
 
 5. **Integration test with MCP client**:
    ```bash
-   mcp-secrets config
+   claude-secrets config
    # Add config to your MCP client
    # Ask it to run: echo {{TEST_KEY}}
    # Verify permission prompt appears

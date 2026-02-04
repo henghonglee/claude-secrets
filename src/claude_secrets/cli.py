@@ -1,4 +1,4 @@
-"""Click CLI commands for mcp-secrets."""
+"""Click CLI commands for claude-secrets."""
 
 import shutil
 import subprocess
@@ -15,7 +15,7 @@ from .vault import Vault
 
 console = Console()
 
-LAUNCHD_LABEL = "com.mcp-secrets.menubar"
+LAUNCHD_LABEL = "com.claude-secrets.menubar"
 LAUNCHD_PLIST = Path.home() / "Library" / "LaunchAgents" / f"{LAUNCHD_LABEL}.plist"
 
 
@@ -25,7 +25,7 @@ LAUNCHD_PLIST = Path.home() / "Library" / "LaunchAgents" / f"{LAUNCHD_LABEL}.pli
 @click.group()
 @click.version_option()
 def main():
-    """MCP Secrets - Intelligent secrets proxy for MCP clients."""
+    """Claude Secrets - Intelligent secrets proxy for MCP clients."""
     pass
 
 
@@ -65,15 +65,15 @@ def init(no_menubar: bool, no_plugin: bool):
 
     console.print("\n[bold green]Ready![/bold green]")
     console.print("\n[dim]Commands:[/dim]")
-    console.print("  [cyan]mcp-secrets add NAME[/cyan]  - Add a secret")
-    console.print("  [cyan]mcp-secrets status[/cyan]    - Check status")
-    console.print("  [cyan]mcp-secrets uninstall[/cyan] - Uninstall (keeps secrets)")
+    console.print("  [cyan]ccs add NAME[/cyan]  - Add a secret")
+    console.print("  [cyan]ccs status[/cyan]    - Check status")
+    console.print("  [cyan]ccs uninstall[/cyan] - Uninstall (keeps secrets)")
 
 
 @main.command()
 def status():
-    """Show status of mcp-secrets components."""
-    console.print("[bold]mcp-secrets status[/bold]\n")
+    """Show status of claude-secrets components."""
+    console.print("[bold]claude-secrets status[/bold]\n")
 
     vault_exists = (CONFIG_DIR / "vault.enc").exists()
     if vault_exists:
@@ -234,7 +234,7 @@ def config_show_mcp():
     mcp_config = {
         "mcpServers": {
             "secrets": {
-                "command": "mcp-secrets",
+                "command": "ccs",
                 "args": ["serve"]
             }
         }
@@ -304,20 +304,20 @@ def menubar(stop_flag: bool):
 
 @main.command()
 def stop():
-    """Stop all running mcp-secrets processes (menubar, server)."""
+    """Stop all running claude-secrets processes (menubar, server)."""
     stopped = []
 
     if _stop_menubar():
         stopped.append("menubar")
 
-    result = subprocess.run(["pkill", "-f", "mcp-secrets.*serve"], capture_output=True)
+    result = subprocess.run(["pkill", "-f", "ccs.*serve"], capture_output=True)
     if result.returncode == 0:
         stopped.append("server")
 
     if stopped:
         console.print(f"[green]Stopped:[/green] {', '.join(stopped)}")
     else:
-        console.print("[dim]No mcp-secrets processes running[/dim]")
+        console.print("[dim]No claude-secrets processes running[/dim]")
 
 
 @main.command()
@@ -327,7 +327,7 @@ def setup():
         console.print("[red]Error:[/red] Setup is only available on macOS")
         sys.exit(1)
 
-    console.print("[bold]Setting up mcp-secrets...[/bold]\n")
+    console.print("[bold]Setting up claude-secrets...[/bold]\n")
 
     vault = Vault()
     vault.init()
@@ -350,13 +350,13 @@ def setup():
 @click.option("--keep-vault", is_flag=True, default=True, hidden=True)
 @click.option("--delete-vault", is_flag=True, help="Also delete the vault and all secrets")
 def uninstall(keep_vault: bool, delete_vault: bool):
-    """Uninstall mcp-secrets (keeps your secrets by default)."""
-    console.print("[bold]Uninstalling mcp-secrets...[/bold]\n")
+    """Uninstall claude-secrets (keeps your secrets by default)."""
+    console.print("[bold]Uninstalling claude-secrets...[/bold]\n")
 
     if _stop_menubar():
         console.print("[green]✓[/green] Stopped menu bar app")
 
-    subprocess.run(["pkill", "-f", "mcp-secrets.*serve"], capture_output=True)
+    subprocess.run(["pkill", "-f", "ccs.*serve"], capture_output=True)
 
     if sys.platform == "darwin":
         if _uninstall_launchd_agent():
@@ -379,7 +379,7 @@ def uninstall(keep_vault: bool, delete_vault: bool):
         else:
             console.print("[dim]·[/dim] Kept vault")
     else:
-        console.print("[dim]·[/dim] Kept vault at ~/.mcp-secrets (your secrets are safe)")
+        console.print("[dim]·[/dim] Kept vault at ~/.claude-secrets (your secrets are safe)")
 
     console.print("\n[bold green]Uninstall complete![/bold green]")
 
@@ -400,14 +400,14 @@ def _parse_timeout(s: str) -> int:
         return int(s)
 
 
-def _get_mcp_secrets_path() -> str:
-    """Get the path to the mcp-secrets executable."""
-    return shutil.which("mcp-secrets") or "mcp-secrets"
+def _get_ccs_path() -> str:
+    """Get the path to the ccs executable."""
+    return shutil.which("ccs") or "ccs"
 
 
 def _is_menubar_running() -> bool:
     """Check if menubar is running."""
-    result = subprocess.run(["pgrep", "-f", "mcp-secrets.*menubar"], capture_output=True)
+    result = subprocess.run(["pgrep", "-f", "claude-secrets.*menubar"], capture_output=True)
     return result.returncode == 0
 
 
@@ -416,9 +416,9 @@ def _start_menubar_background() -> bool:
     if _is_menubar_running():
         return True
 
-    mcp_path = _get_mcp_secrets_path()
+    ccs_path = _get_ccs_path()
     subprocess.Popen(
-        [mcp_path, "menubar"],
+        [ccs_path, "menubar"],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
         start_new_session=True
@@ -428,13 +428,13 @@ def _start_menubar_background() -> bool:
 
 def _stop_menubar() -> bool:
     """Stop the menubar process."""
-    result = subprocess.run(["pkill", "-f", "mcp-secrets.*menubar"], capture_output=True)
+    result = subprocess.run(["pkill", "-f", "claude-secrets.*menubar"], capture_output=True)
     return result.returncode == 0
 
 
 def _generate_launchd_plist() -> str:
     """Generate the launchd plist content."""
-    mcp_path = _get_mcp_secrets_path()
+    ccs_path = _get_ccs_path()
     return f"""<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -443,7 +443,7 @@ def _generate_launchd_plist() -> str:
     <string>{LAUNCHD_LABEL}</string>
     <key>ProgramArguments</key>
     <array>
-        <string>{mcp_path}</string>
+        <string>{ccs_path}</string>
         <string>menubar</string>
     </array>
     <key>RunAtLoad</key>
@@ -493,12 +493,12 @@ def _is_claude_code_installed() -> bool:
 
 
 def _install_claude_plugin() -> tuple[bool, str]:
-    """Install the mcp-secrets Claude Code plugin. Returns (success, message)."""
+    """Install the claude-secrets Claude Code plugin. Returns (success, message)."""
     if not _is_claude_code_installed():
         return False, "Claude Code not installed"
 
     marketplace_result = subprocess.run(
-        ["claude", "plugin", "marketplace", "add", "henghonglee/mcp-secrets"],
+        ["claude", "plugin", "marketplace", "add", "henghonglee/claude-secrets"],
         capture_output=True,
         text=True
     )
@@ -513,7 +513,7 @@ def _install_claude_plugin() -> tuple[bool, str]:
         return False, f"Failed to add marketplace: {marketplace_result.stderr.strip()}"
 
     result = subprocess.run(
-        ["claude", "plugin", "install", "mcp-secrets@henghonglee-mcp-secrets"],
+        ["claude", "plugin", "install", "claude-secrets@henghonglee-claude-secrets"],
         capture_output=True,
         text=True
     )
@@ -527,12 +527,12 @@ def _install_claude_plugin() -> tuple[bool, str]:
 
 
 def _uninstall_claude_plugin() -> tuple[bool, str]:
-    """Uninstall the mcp-secrets Claude Code plugin and marketplace. Returns (success, message)."""
+    """Uninstall the claude-secrets Claude Code plugin and marketplace. Returns (success, message)."""
     if not _is_claude_code_installed():
         return False, "Claude Code not installed"
 
     result = subprocess.run(
-        ["claude", "plugin", "uninstall", "mcp-secrets@henghonglee-mcp-secrets"],
+        ["claude", "plugin", "uninstall", "claude-secrets@henghonglee-claude-secrets"],
         capture_output=True,
         text=True
     )
@@ -544,7 +544,7 @@ def _uninstall_claude_plugin() -> tuple[bool, str]:
     )
 
     subprocess.run(
-        ["claude", "plugin", "marketplace", "remove", "henghonglee-mcp-secrets"],
+        ["claude", "plugin", "marketplace", "remove", "henghonglee-claude-secrets"],
         capture_output=True,
         text=True
     )

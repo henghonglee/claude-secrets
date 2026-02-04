@@ -1,12 +1,12 @@
 {
-  "name": "mcp-secrets",
+  "name": "claude-secrets",
   "description": "Secure secrets management for CLI commands. Inject secrets, capture credentials from output, and manage permissions.",
   "version": "1.0.8",
   "author": {
     "name": "henghonglee"
   },
-  "homepage": "https://github.com/henghonglee/mcp-secrets",
-  "repository": "https://github.com/henghonglee/mcp-secrets",
+  "homepage": "https://github.com/henghonglee/claude-secrets",
+  "repository": "https://github.com/henghonglee/claude-secrets",
   "license": "MIT",
   "keywords": ["secrets", "security", "credentials", "vault", "mcp"]
 }

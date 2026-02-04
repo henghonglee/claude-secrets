@@ -150,4 +150,4 @@ EOF
 - Secrets are automatically redacted from command output
 - User must approve each secret's first use in a session
 - Captured secrets are encrypted in the vault
-- All access is logged to `~/.mcp-secrets/audit.log`
+- All access is logged to `~/.claude-secrets/audit.log`

@@ -1,4 +1,4 @@
-"""Configuration management for mcp-secrets."""
+"""Configuration management for claude-secrets."""
 
 import json
 from pathlib import Path
@@ -8,7 +8,7 @@ DEFAULT_CONFIG = {
     "session_timeout": 3600,  # 1 hour in seconds
 }
 
-CONFIG_DIR = Path.home() / ".mcp-secrets"
+CONFIG_DIR = Path.home() / ".claude-secrets"
 CONFIG_FILE = CONFIG_DIR / "config.json"
 VAULT_FILE = CONFIG_DIR / "vault.enc"
 LOG_FILE = CONFIG_DIR / "audit.log"
@@ -76,4 +76,3 @@ def set_config_value(key: str, value: str) -> None:
             target[parts[-1]] = value
 
     save_config(config)
-

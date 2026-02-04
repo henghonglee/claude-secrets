@@ -3,7 +3,7 @@
 import pytest
 from unittest.mock import MagicMock
 
-from mcp_secrets.injector import extract_placeholders, inject_secrets, mask_command
+from claude_secrets.injector import extract_placeholders, inject_secrets, mask_command
 
 
 def test_extract_placeholders_single():

@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "mcp-secrets"
+name = "claude-secrets"
 version = "1.0.9"
 description = "Intelligent secrets proxy for MCP clients"
 readme = "README.md"
@@ -40,16 +40,16 @@ dev = [
 ]
 
 [project.scripts]
-mcp-secrets = "mcp_secrets.cli:main"
-mcp-secrets-menubar = "mcp_secrets.menubar:run_menubar"
+ccs = "claude_secrets.cli:main"
+claude-secrets-menubar = "claude_secrets.menubar:run_menubar"
 
 [project.urls]
-Homepage = "https://github.com/henghonglee/mcp-secrets"
-Repository = "https://github.com/henghonglee/mcp-secrets"
-Issues = "https://github.com/henghonglee/mcp-secrets/issues"
+Homepage = "https://github.com/henghonglee/claude-secrets"
+Repository = "https://github.com/henghonglee/claude-secrets"
+Issues = "https://github.com/henghonglee/claude-secrets/issues"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/mcp_secrets"]
+packages = ["src/claude_secrets"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

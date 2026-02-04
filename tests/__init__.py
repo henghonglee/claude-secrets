@@ -1,1 +1,1 @@
-"""Tests for mcp-secrets."""
+"""Tests for claude-secrets."""

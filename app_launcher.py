@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Launcher script for MCP Secrets menu bar app."""
+"""Launcher script for Claude Secrets menu bar app."""
 
 import sys
 import os
@@ -13,7 +13,7 @@ if getattr(sys, 'frozen', False):
     if resources_dir not in sys.path:
         sys.path.insert(0, resources_dir)
 
-from mcp_secrets.menubar import run_menubar
+from claude_secrets.menubar import run_menubar
 
 if __name__ == "__main__":
     run_menubar()

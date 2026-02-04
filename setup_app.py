@@ -1,5 +1,5 @@
 """
-py2app setup for MCP Secrets Menu Bar app.
+py2app setup for Claude Secrets Menu Bar app.
 
 Build with:
     python setup_app.py py2app
@@ -17,9 +17,9 @@ OPTIONS = {
     'argv_emulation': False,
     'iconfile': 'app_icon.icns',
     'plist': {
-        'CFBundleName': 'MCP Secrets',
-        'CFBundleDisplayName': 'MCP Secrets',
-        'CFBundleIdentifier': 'com.mcpsecrets.menubar',
+        'CFBundleName': 'Claude Secrets',
+        'CFBundleDisplayName': 'Claude Secrets',
+        'CFBundleIdentifier': 'com.claudesecrets.menubar',
         'CFBundleVersion': '1.0.0',
         'CFBundleShortVersionString': '1.0.0',
         'LSUIElement': True,  # Menu bar app (no dock icon)
@@ -27,7 +27,7 @@ OPTIONS = {
         'LSMinimumSystemVersion': '10.13.0',
     },
     'packages': [
-        'mcp_secrets',
+        'claude_secrets',
         'rumps',
         'keyring',
         'cryptography',
@@ -39,9 +39,9 @@ OPTIONS = {
         'pygments',
     ],
     'includes': [
-        'mcp_secrets.vault',
-        'mcp_secrets.config',
-        'mcp_secrets.menubar',
+        'claude_secrets.vault',
+        'claude_secrets.config',
+        'claude_secrets.menubar',
         'keyring.backends',
         'keyring.backends.macOS',
     ],
@@ -59,7 +59,7 @@ OPTIONS = {
 }
 
 setup(
-    name='MCP Secrets',
+    name='Claude Secrets',
     app=APP,
     data_files=DATA_FILES,
     options={'py2app': OPTIONS},

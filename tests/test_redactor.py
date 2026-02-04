@@ -3,7 +3,7 @@
 import json
 import pytest
 
-from mcp_secrets.redactor import redact_secrets, redact_patterns, redact_json_paths, apply_redaction
+from claude_secrets.redactor import redact_secrets, redact_patterns, redact_json_paths, apply_redaction
 
 
 def test_redact_secrets_single():

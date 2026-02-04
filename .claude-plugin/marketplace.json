@@ -1,13 +1,13 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "name": "henghonglee-mcp-secrets",
+  "name": "henghonglee-claude-secrets",
   "description": "Secure secrets management for Claude Code - inject secrets into CLI commands with user approval",
   "owner": {
     "name": "henghonglee"
   },
   "plugins": [
     {
-      "name": "mcp-secrets",
+      "name": "claude-secrets",
       "description": "Secure secrets management for CLI commands. Inject secrets, capture credentials from output, and manage permissions with encrypted storage.",
       "version": "1.0.8",
       "author": {
@@ -15,10 +15,10 @@
       },
       "source": {
         "source": "url",
-        "url": "https://github.com/henghonglee/mcp-secrets.git"
+        "url": "https://github.com/henghonglee/claude-secrets.git"
       },
       "category": "security",
-      "homepage": "https://github.com/henghonglee/mcp-secrets"
+      "homepage": "https://github.com/henghonglee/claude-secrets"
     }
   ]
 }
